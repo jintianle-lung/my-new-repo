@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>识字小乐园 · 读写训练游戏</title>
+<style>
+:root{--bg:#FFF8EC;--card:#fff;--ink:#3b3a36;--pri:#3d8bfd;--ok:#2fa84f;--bad:#e5534b;--soft:#f1e7d4;--hl:#ffd85c}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;font-size:20px;line-height:1.6}
+.zi{font-family:"KaiTi","STKaiti","Kaiti SC","楷体","AR PL UKai CN",serif}
+header.top{display:flex;align-items:center;gap:12px;padding:14px 20px;background:#fff;border-bottom:3px solid var(--soft);position:sticky;top:0;z-index:5;flex-wrap:wrap}
+header.top h1{font-size:24px;margin:0;flex:1}
+main{max-width:980px;margin:0 auto;padding:20px}
+button{font:inherit;cursor:pointer;border:none;border-radius:14px;padding:10px 18px;background:var(--soft);color:var(--ink);transition:transform .1s,background .2s}
+button:hover{transform:translateY(-2px)}
+button:disabled{opacity:.35;cursor:default;transform:none}
+button.pri{background:var(--pri);color:#fff}
+.cat{margin:22px 0 8px;font-size:22px;font-weight:bold}
+.cat small{font-weight:normal;color:#8a8170;font-size:16px;margin-left:8px}
+.games{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.gcard{background:var(--card);border-radius:18px;padding:16px;box-shadow:0 3px 0 var(--soft);text-align:left}
+.gcard .ic{font-size:40px}
+.gcard b{display:block;font-size:22px}
+.gcard span{font-size:15px;color:#7a7263}
+.levels{display:flex;gap:6px}
+.levels button{padding:6px 12px;font-size:16px}
+.levels button.on{background:var(--hl);font-weight:bold}
+.prompt{display:flex;align-items:center;gap:12px;background:#fff;border-radius:16px;padding:12px 16px;margin-bottom:16px;font-size:22px}
+.prompt button{font-size:22px;padding:6px 12px}
+.stage{background:#fff;border-radius:20px;padding:20px;min-height:300px;text-align:center}
+.fb{min-height:64px;margin-top:14px;display:flex;align-items:center;justify-content:center;gap:16px;font-size:22px;flex-wrap:wrap}
+.fb.ok{color:var(--ok)}.fb.bad{color:var(--bad)}
+.progress{font-size:18px;color:#7a7263}
+.target{display:inline-block;font-size:84px;line-height:1;padding:14px 26px;border:4px dashed var(--pri);border-radius:20px;margin:6px 0 16px;min-width:130px}
+.grid{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.cell{font-size:52px;width:96px;height:96px;padding:0;background:#fdf6e8;border:3px solid var(--soft);position:relative}
+.cell.found{background:#dff5e4;border-color:var(--ok)}
+.cell.found::after{content:"✔";position:absolute;right:4px;top:-6px;font-size:22px;color:var(--ok)}
+.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.sentence{font-size:44px;letter-spacing:4px}
+.sentence span.ch{cursor:pointer;padding:0 2px;border-radius:8px}
+.sentence span.ch:hover{background:#fdf0cf}
+.sentence span.found{background:#dff5e4;color:var(--ok)}
+.slots{display:flex;gap:12px;justify-content:center;align-items:center;margin:14px 0;font-size:40px}
+.slot{width:90px;height:90px;border:3px dashed #c9bfa8;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:52px;cursor:pointer;background:#fffdf7}
+.equation{font-size:46px;margin:10px 0;color:var(--ok)}
+.pics{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.pic{font-size:60px;width:150px;height:120px;background:#fdf6e8;border:3px solid var(--soft)}
+.pic small{display:block;font-size:16px}
+.tones{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.tone{background:#eef5ff;border:3px solid #cfe0fb;width:170px;padding:8px}
+.tone svg{width:150px;height:90px;display:block}
+.tone span{font-size:18px}
+.bigword{font-size:60px;margin:8px 0}
+.bigword .hl{background:var(--hl);border-radius:10px;padding:0 6px}
+canvas.board{width:100%;max-width:640px;border-radius:16px;touch-action:none;cursor:crosshair;border:3px solid #b7d99a}
+.strokecards{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:12px}
+.scard{padding:6px;background:#fdf6e8;border:3px solid var(--soft)}
+.scard svg,.queue svg{width:96px;height:96px;display:block}
+.queue{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.qslot{width:108px;height:108px;border:3px dashed #c9bfa8;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#c9bfa8;font-size:28px}
+.model svg{width:200px;height:200px}
+.blocks{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:12px 0;min-height:70px}
+.block{font-size:32px;padding:10px 20px;background:#fff2c9;border:3px solid #f1d98a}
+.answer{min-height:90px;border:3px dashed #c9bfa8;border-radius:16px;padding:10px;background:#fffdf7}
+.note{font-size:16px;color:#8a8170;background:#fff;border-radius:14px;padding:12px 16px;margin-top:28px}
+.summary{font-size:28px}
+.summary .stars{font-size:48px;margin:10px 0}
+</style>
+</head>
+<body>
+<header class="top" id="top"></header>
+<main id="main"></main>
+<script>
+"use strict";
+const $=(s,el=document)=>el.querySelector(s);
+function h(tag,props,...kids){const el=document.createElement(tag);for(const [k,v] of Object.entries(props||{})){if(k==="class")el.className=v;else if(k==="html")el.innerHTML=v;else if(k==="style")el.style.cssText=v;else if(k.startsWith("on"))el.addEventListener(k.slice(2),v);else el.setAttribute(k,v);}for(const c of kids.flat()){if(c==null||c===false)continue;el.append(c.nodeType?c:document.createTextNode(String(c)));}return el;}
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const pickOne=a=>a[Math.floor(Math.random()*a.length)];
+const pickN=(a,n)=>shuffle(a).slice(0,n);
+const rand=(a,b)=>a+Math.random()*(b-a);
+
+let zhVoice=null;
+function loadVoice(){const vs=speechSynthesis.getVoices();zhVoice=vs.find(v=>/zh[-_]CN/i.test(v.lang))||vs.find(v=>/^zh/i.test(v.lang))||null;}
+if("speechSynthesis" in window){loadVoice();speechSynthesis.onvoiceschanged=loadVoice;}
+function speak(text){if(!("speechSynthesis" in window)||!text)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="zh-CN";if(zhVoice)u.voice=zhVoice;u.rate=0.8;speechSynthesis.speak(u);}
+let actx=null;
+function beep(ok){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();const notes=ok?[523,659,784]:[300,220];notes.forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=f;o.type="sine";g.gain.setValueAtTime(0.15,actx.currentTime+i*0.12);g.gain.exponentialRampToValueAtTime(0.001,actx.currentTime+i*0.12+0.25);o.connect(g).connect(actx.destination);o.start(actx.currentTime+i*0.12);o.stop(actx.currentTime+i*0.12+0.3);});}catch(e){}}
+
+const PART_NAME={"亻":"单人旁","宀":"宝盖头","艹":"草字头","氵":"三点水","扌":"提手旁","讠":"言字旁","木":"木"};
+const sayPart=p=>PART_NAME[p]||p;
+
+const DETECT=[
+ {t:"晴",d:["睛","清","情","请"],s:"晴天的时候，我用眼睛看着清清的河水，心情就像晴空一样好。"},
+ {t:"大",d:["太","犬","天","夫"],s:"大象太大了，大家都说它比天还要大。"},
+ {t:"人",d:["入","八","个","从"],s:"门口有八个人，入门的人都是大人。"},
+ {t:"日",d:["目","白","曰","旦"],s:"今日是白天，红日照着我，日光让我眯起了双目。"},
+ {t:"木",d:["本","末","未","术"],s:"木头做的桌子上放着一本书，书里画着一棵大树木。"},
+ {t:"鸟",d:["乌","岛","马","鸣"],s:"小鸟在岛上鸣叫，一只乌鸦也飞来了，鸟儿们真热闹。"}
+];
+const FAR=["山","水","火","牛","羊","花","雨","风","田","口","手","耳"];
+
+const ASSEMBLE=[
+ {c:"明",p:["日","月"],w:"明亮",pic:"☀️"},
+ {c:"好",p:["女","子"],w:"好朋友",pic:"🤝"},
+ {c:"林",p:["木","木"],w:"树林",pic:"🌳"},
+ {c:"休",p:["亻","木"],w:"休息",pic:"😴"},
+ {c:"尖",p:["小","大"],w:"尖尖的",pic:"🔺"},
+ {c:"岩",p:["山","石"],w:"岩石",pic:"🪨"},
+ {c:"男",p:["田","力"],w:"男孩",pic:"👦"},
+ {c:"鲜",p:["鱼","羊"],w:"新鲜",pic:"🐟"},
+ {c:"炎",p:["火","火"],w:"炎热",pic:"🔥"},
+ {c:"字",p:["宀","子"],w:"写字",pic:"✏️"}
+];
+const PART_POOL=["日","月","女","子","木","亻","小","大","山","石","田","力","鱼","羊","火","宀","口","土","禾","米","又","目"];
+
+const TONE_SETS=[
+ {py:["mā","má","mǎ","mà"],c:["妈","麻","马","骂"],pic:["👩","🧶","🐴","😠"],w:["妈妈","麻绳","小马","骂人"]},
+ {py:["tāng","táng","tǎng","tàng"],c:["汤","糖","躺","烫"],pic:["🍲","🍬","🛌","🔥"],w:["喝汤","糖果","躺下","好烫"]},
+ {py:["shū","shú","shǔ","shù"],c:["书","熟","鼠","树"],pic:["📖","🍚","🐭","🌳"],w:["看书","煮熟","老鼠","大树"]},
+ {py:["bāo","báo","bǎo","bào"],c:["包","雹","宝","抱"],pic:["🎒","🧊","💎","🤗"],w:["书包","冰雹","宝石","拥抱"]},
+ {py:["yī","yí","yǐ","yì"],c:["衣","姨","椅","意"],pic:["👕","👩","🪑","💡"],w:["衣服","阿姨","椅子","意思"]}
+];
+const TONE_WORDS=[{w:"小马",i:1,t:3},{w:"糖果",i:0,t:2},{w:"大树",i:1,t:4},{w:"书包",i:0,t:1},{w:"老鼠",i:1,t:3},{w:"阿姨",i:1,t:2},{w:"喝汤",i:1,t:1},{w:"拥抱",i:1,t:4},{w:"椅子",i:0,t:3},{w:"衣服",i:0,t:1},{w:"妈妈",i:0,t:1},{w:"白云",i:0,t:2}];
+const TONE_PATH=["M10 18 L90 18","M10 52 L90 12","M10 22 Q45 80 90 12","M10 10 L90 52"];
+const TONE_NAME=["一声","二声","三声","四声"];
+
+const HOMO=[
+ {w:"眼睛",t:"睛",o:["睛","晴","情","清"],b:"眼＿",s:"我的眼睛大大的。",pic:"👁️"},
+ {w:"晴天",t:"晴",o:["晴","睛","情","清"],b:"＿天",s:"今天是晴天，太阳出来了。",pic:"☀️"},
+ {w:"心情",t:"情",o:["情","晴","睛","清"],b:"心＿",s:"考了一百分，我的心情很好。",pic:"😊"},
+ {w:"清水",t:"清",o:["清","情","晴","睛"],b:"＿水",s:"小河里的水很清。",pic:"💧"},
+ {w:"请坐",t:"请",o:["请","清","情","晴"],b:"＿坐",s:"客人来了，妈妈说：请坐。",pic:"🪑"},
+ {w:"公园",t:"园",o:["园","圆","元","原"],b:"公＿",s:"星期天我们去公园玩。",pic:"🏞️"},
+ {w:"圆形",t:"圆",o:["圆","园","元","原"],b:"＿形",s:"十五的月亮圆圆的。",pic:"🌕"},
+ {w:"一元",t:"元",o:["元","园","圆","原"],b:"一＿",s:"这支铅笔一元钱。",pic:"🪙"},
+ {w:"草原",t:"原",o:["原","园","圆","元"],b:"草＿",s:"草原上有很多牛羊。",pic:"🐄"}
+];
+
+const STROKES={
+ "十":{s:[[[20,50],[80,50]],[[50,15],[50,85]]],n:["横","竖"]},
+ "人":{s:[[[52,14],[50,40],[20,86]],[[50,42],[84,86]]],n:["撇","捺"]},
+ "大":{s:[[[18,40],[82,40]],[[50,14],[50,42],[20,86]],[[51,44],[84,86]]],n:["横","撇","捺"]},
+ "口":{s:[[[25,25],[25,75]],[[25,25],[75,25],[75,75]],[[25,75],[75,75]]],n:["竖","横折","横"]},
+ "山":{s:[[[50,14],[50,80]],[[22,38],[22,80],[78,80]],[[78,38],[78,80]]],n:["竖","竖折","竖"]},
+ "木":{s:[[[16,36],[84,36]],[[50,10],[50,90]],[[48,38],[16,74]],[[52,38],[84,74]]],n:["横","竖","撇","点"]},
+ "王":{s:[[[24,20],[76,20]],[[30,50],[70,50]],[[50,20],[50,80]],[[18,80],[82,80]]],n:["横","横","竖","提"]},
+ "中":{s:[[[28,30],[28,64]],[[28,30],[72,30],[72,64]],[[28,64],[72,64]],[[50,8],[50,92]]],n:["竖","横折","横","竖"]}
+};
+const STROKE_POOL={1:["十","人","大","口"],2:["大","口","山","木"],3:["木","王","中","山"]};
+
+const SENT={
+ 1:[
+  {w:["小猫","在桌子下","睡觉"],pic:"🐱💤",bad:["🐶💤","🐱🍽️"]},
+  {w:["妈妈","在厨房","做饭"],pic:"👩🍳",bad:["👩🛏️","👨⚽"]},
+  {w:["小明","在公园","踢球"],pic:"👦⚽",bad:["👦📖","👧🍳"]},
+  {w:["小鸟","在树上","唱歌"],pic:"🐦🎵",bad:["🐦💤","🐟🎵"]},
+  {w:["我","在教室里","看书"],pic:"🧒📖",bad:["🧒⚽","🧒🍳"]}
+ ],
+ 2:[
+  {w:["弟弟","和爸爸","在河边","钓鱼"],alt:[["弟弟","在河边","和爸爸","钓鱼"]],pic:"👦👨🎣",bad:["👦👨⚽","👧👩🎣"]},
+  {w:["奶奶","每天早上","在公园","散步"],alt:[["每天早上","奶奶","在公园","散步"]],pic:"👵🌅🚶",bad:["👵🌙🛏️","👴🍳"]},
+  {w:["小狗","把球","叼","回来了"],pic:"🐶⚽",bad:["🐱🧶","🐶🛏️"]},
+  {w:["姐姐","在房间里","认真地","写作业"],alt:[["姐姐","认真地","在房间里","写作业"]],pic:"👧✏️",bad:["👧📺","👦⚽"]}
+ ]
+};
+const SENT_EXTRA=["苹果","跑得快","红色的","飞走了","下雨"];
+
+function tianSVG(inner){return `<svg viewBox="0 0 100 100"><rect x="2" y="2" width="96" height="96" fill="#fffdf7" stroke="#e0a8a8" stroke-width="1.5"/><path d="M2 50H98M50 2V98M2 2L98 98M98 2L2 98" stroke="#efcfcf" stroke-width="0.8" stroke-dasharray="3 3"/>${inner}</svg>`;}
+const strokeD=pts=>"M"+pts.map(p=>p.join(" ")).join(" L");
+
+const GAMES=[
+{id:"detective",cat:"文字加工",icon:"🔍",name:"汉字侦探",goal:"在干扰字中找出目标字，练习有序扫描。",levels:["字少、差异大","字多、形近","在短句中寻找"],
+ round(stage,level,api){
+  const it=pickOne(DETECT);
+  api.prompt(`小朋友，请帮忙找出身上有「${it.t}」这个字的犯人！`);
+  stage.append(h("div",{},"要找的字："),h("div",{class:"target zi"},it.t));
+  let total=0,found=0;
+  const hit=(el)=>{el.classList.add("found");found++;beep(true);if(found===total)api.ok(`太棒了！${total} 个「${it.t}」全部找到了！`);else api.say(`找到 ${found} 个，还有 ${total-found} 个`);};
+  const miss=(el)=>{el.classList.remove("shake");void el.offsetWidth;el.classList.add("shake");api.bad(`这个不是「${it.t}」，再仔细看看`);};
+  if(level<3){
+   const chars=level===1?[it.t,it.t,...pickN(FAR,4)]:[it.t,it.t,it.t,it.t,...it.d,...it.d];
+   total=chars.filter(c=>c===it.t).length;
+   const g=h("div",{class:"grid"});
+   shuffle(chars).forEach(c=>{const b=h("button",{class:"cell zi"},c);b.onclick=()=>{if(b.classList.contains("found"))return;c===it.t?hit(b):miss(b);};g.append(b);});
+   stage.append(g);
+  }else{
+   const p=h("div",{class:"sentence zi"});
+   [...it.s].forEach(c=>{if(/[，。！？、：]/.test(c)){p.append(c);return;}const sp=h("span",{class:"ch"},c);if(c===it.t)total++;sp.onclick=()=>{if(sp.classList.contains("found"))return;c===it.t?hit(sp):miss(sp);};p.append(sp);});
+   stage.append(p,h("div",{class:"progress"},`句子里一共藏着 ${total} 个「${it.t}」`));
+  }
+ }},
+{id:"assemble",cat:"文字加工",icon:"🧩",name:"汉字拼装厂",goal:"部件分解与组合，认识整字。",levels:["组字：目标字一直显示","组字：8 秒后目标字消失","拆字：找出字里的部件"],
+ round(stage,level,api){
+  const it=pickOne(ASSEMBLE);
+  const others=PART_POOL.filter(p=>!it.p.includes(p));
+  const tgt=h("div",{class:"target zi"},it.c);
+  stage.append(tgt);
+  const finish=()=>{
+   stage.append(h("div",{class:"equation zi"},`${it.p.join(" ＋ ")} ＝ ${it.c}`));
+   speak(`${it.p.map(sayPart).join("加")}，等于${it.c}。${it.w}的${it.c}`);
+   setTimeout(()=>{
+    const opts=shuffle([it.pic,...pickN(ASSEMBLE.filter(a=>a!==it).map(a=>a.pic),2)]);
+    api.say(`哪一张图是「${it.w}」？`,true);
+    const row=h("div",{class:"pics"});
+    opts.forEach(o=>{const b=h("button",{class:"pic"},o);b.onclick=()=>{if(o===it.pic){b.style.borderColor="var(--ok)";api.ok(`答对了！「${it.c}」，${it.w}的${it.c}`);}else api.bad("再想一想，哪张图和这个词有关？");};row.append(b);});
+    stage.append(row);
+   },2600);
+  };
+  if(level<3){
+   api.prompt(`怎么组成「${it.c}」呢？`);
+   if(level===2)api.timer(()=>{tgt.textContent="？";api.say("目标字藏起来了，你还记得吗？");},8000);
+   const slots=it.p.map(()=>h("div",{class:"slot zi"}));
+   const filled=it.p.map(()=>null);
+   const wrap=h("div",{class:"slots"});
+   slots.forEach((s,i)=>{if(i)wrap.append("＋");wrap.append(s);s.onclick=()=>{if(locked)return;if(filled[i]){filled[i].b.disabled=false;filled[i]=null;s.textContent="";}};});
+   const opts=shuffle([...it.p,...pickN(others,3)]);
+   const grid=h("div",{class:"grid"});
+   let locked=false;
+   opts.forEach(p=>{const b=h("button",{class:"cell zi"},p);b.onclick=()=>{if(locked)return;const i=filled.indexOf(null);if(i<0)return;speak(sayPart(p));filled[i]={p,b};slots[i].textContent=p;b.disabled=true;
+     if(!filled.includes(null)){const got=filled.map(f=>f.p).sort().join(),need=it.p.slice().sort().join();
+      if(got===need){locked=true;tgt.textContent=it.c;beep(true);api.say("拼好了！");finish();}
+      else{api.bad("组合不对，再试试");setTimeout(()=>{filled.forEach((f,k)=>{f.b.disabled=false;filled[k]=null;slots[k].textContent="";});},700);}}};grid.append(b);});
+   stage.append(wrap,grid);
+  }else{
+   api.prompt(`「${it.c}」可以拆出哪些部件呢？`);
+   const need=[...new Set(it.p)];let got=0;
+   const grid=h("div",{class:"grid"});
+   shuffle([...need,...pickN(others,4)]).forEach(p=>{const b=h("button",{class:"cell zi"},p);b.onclick=()=>{if(b.classList.contains("found"))return;
+     if(need.includes(p)){b.classList.add("found");got++;beep(true);speak(`「${it.c}」字中有${sayPart(p)}`);if(got===need.length){api.say("全部找到了！");setTimeout(finish,1500);}}
+     else{b.classList.add("shake");setTimeout(()=>b.classList.remove("shake"),400);api.bad(`「${it.c}」里没有「${p}」哦`);}};grid.append(b);});
+   stage.append(grid);
+  }
+ }},
+{id:"tone",cat:"语音加工",icon:"🛝",name:"声调滑梯",goal:"辨别普通话的四个声调。",levels:["两种声调对比","四声混合","在词语中辨别"],
+ round(stage,level,api){
+  let target,spoken,after;
+  if(level<3){
+   const set=pickOne(TONE_SETS);const ti=Math.floor(Math.random()*4);
+   target=ti;spoken=set.c[ti];
+   const choices=level===1?shuffle([ti,pickOne([0,1,2,3].filter(x=>x!==ti))]).sort():[0,1,2,3];
+   api.prompt("听一听，这个字是第几声？小球要从哪条滑梯滚下来？",spoken);
+   after=()=>{
+    stage.append(h("div",{class:"bigword zi"},`${set.c[ti]} ${set.py[ti]} ${set.pic[ti]}`));
+    speak(`${set.py[ti]}，${set.w[ti]}`);
+    setTimeout(()=>{
+     api.say(`哪张图是「${set.w[ti]}」？`,true);
+     const row=h("div",{class:"pics"});
+     shuffle([ti,...pickN([0,1,2,3].filter(x=>x!==ti),2)]).forEach(k=>{const b=h("button",{class:"pic"},set.pic[k]);b.onclick=()=>{k===ti?api.ok(`答对了！${set.w[ti]}`):api.bad("再听一听这个词");};row.append(b);});
+     stage.append(row);
+    },1800);
+   };
+   renderTones(choices);
+  }else{
+   const tw=pickOne(TONE_WORDS);target=tw.t-1;spoken=tw.w;
+   api.prompt(`听词语，黄色的字是第几声？`,spoken);
+   const wd=h("div",{class:"bigword zi"});[...tw.w].forEach((c,i)=>wd.append(i===tw.i?h("span",{class:"hl"},c):c));
+   stage.append(wd);
+   after=()=>api.ok(`对了！「${tw.w[tw.i]}」是${TONE_NAME[target]}`);
+   renderTones([0,1,2,3]);
+  }
+  function renderTones(list){
+   const row=h("div",{class:"tones"});let done=false;
+   list.forEach(k=>{const b=h("button",{class:"tone"});b.innerHTML=`<svg viewBox="0 0 100 64"><path d="${TONE_PATH[k]}" stroke="#3d8bfd" stroke-width="7" fill="none" stroke-linecap="round"/></svg><span>${TONE_NAME[k]}</span>`;
+    b.onclick=()=>{if(done)return;
+     if(k===target){done=true;const svg=b.querySelector("svg");const c=document.createElementNS("http://www.w3.org/2000/svg","circle");c.setAttribute("r","8");c.setAttribute("fill","#e5534b");
+      const am=document.createElementNS("http://www.w3.org/2000/svg","animateMotion");am.setAttribute("dur","1s");am.setAttribute("path",TONE_PATH[k]);am.setAttribute("fill","freeze");am.setAttribute("begin","indefinite");c.append(am);svg.append(c);try{am.beginElement();}catch(e){}
+      b.style.borderColor="var(--ok)";beep(true);api.say(`是${TONE_NAME[k]}！`);setTimeout(after,1100);}
+     else{api.bad(`不是${TONE_NAME[k]}，再听一次`);setTimeout(()=>speak(spoken),900);}};
+    row.append(b);});
+   stage.append(row);
+  }
+ }},
+{id:"homophone",cat:"形音义整合",icon:"👂",name:"听词选字",goal:"借助词语和句子语境，选出正确的同音字。",levels:["两个候选字","四个同音字","听句子选字"],
+ round(stage,level,api){
+  const it=pickOne(HOMO);
+  const opts=level===1?shuffle([it.t,pickOne(it.o.filter(x=>x!==it.t))]):shuffle(it.o);
+  stage.append(h("div",{style:"font-size:72px"},it.pic));
+  if(level<3){api.prompt(`听一听：「${it.w}」，空格里该填哪个字？`,it.w);stage.append(h("div",{class:"bigword zi"},it.b));}
+  else{api.prompt("听句子，空格里该填哪个字？",it.s);stage.append(h("div",{class:"sentence zi",style:"font-size:36px"},it.s.split(it.t).join("＿")));}
+  const g=h("div",{class:"grid",style:"margin-top:16px"});
+  opts.forEach(c=>{const b=h("button",{class:"cell zi"},c);b.onclick=()=>{if(c===it.t){b.classList.add("found");api.ok(`对了！${it.w}的「${it.t}」`,`${it.w}，${it.w}的${it.t}`);}else{b.classList.add("shake");setTimeout(()=>b.classList.remove("shake"),400);api.bad("读音一样，但意思不对哦，想想这个词的意思");}};g.append(b);});
+  stage.append(g);
+ }},
+{id:"wolf",cat:"空间规划",icon:"🐺",name:"大灰狼与小猪",goal:"观察位置，规划下笔画线的地方。",levels:["一只狼一只猪","中间有石头要绕开","好几只大灰狼"],
+ round(stage,level,api){
+  const W=640,H=400;
+  const cv=h("canvas",{class:"board",width:W,height:H});
+  const clear=h("button",{},"🧽 擦掉重画");
+  stage.append(cv,h("div",{style:"margin-top:10px"},clear));
+  const ctx=cv.getContext("2d");
+  let pig,wolves=[],rocks=[];
+  if(level<3){pig={x:rand(430,570),y:rand(80,320)};wolves.push({x:rand(70,210),y:rand(80,320)});
+   if(level===2){const w=wolves[0],t=rand(0.4,0.6);rocks.push({x:w.x+(pig.x-w.x)*t,y:w.y+(pig.y-w.y)*t,r:34});}}
+  else{pig={x:rand(290,350),y:rand(180,220)};const a0=rand(0,Math.PI*2);for(let k=0;k<3;k++){const a=a0+k*Math.PI*2/3+rand(-0.3,0.3);wolves.push({x:pig.x+Math.cos(a)*150,y:pig.y+Math.sin(a)*150});}}
+  api.prompt(level===1?"画一条线，把大灰狼和小猪隔开！":level===2?"画一条线把它们隔开，线不能碰到石头哦！":"好几只大灰狼！画一条线，保护小猪！");
+  let pts=[],drawing=false,done=false;
+  function draw(){ctx.fillStyle="#d8f0c0";ctx.fillRect(0,0,W,H);ctx.textAlign="center";ctx.textBaseline="middle";
+   rocks.forEach(r=>{ctx.fillStyle="#b9b2a6";ctx.beginPath();ctx.arc(r.x,r.y,r.r,0,Math.PI*2);ctx.fill();ctx.font="40px sans-serif";ctx.fillText("🪨",r.x,r.y);});
+   ctx.font="52px sans-serif";wolves.forEach(w=>ctx.fillText("🐺",w.x,w.y));ctx.fillText("🐷",pig.x,pig.y);
+   if(pts.length>1){ctx.strokeStyle="#8b5a2b";ctx.lineWidth=8;ctx.lineCap="round";ctx.lineJoin="round";ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);pts.forEach(p=>ctx.lineTo(p.x,p.y));ctx.stroke();}}
+  const pos=e=>{const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height};};
+  cv.addEventListener("pointerdown",e=>{if(done)return;drawing=true;pts=[pos(e)];cv.setPointerCapture(e.pointerId);draw();});
+  cv.addEventListener("pointermove",e=>{if(!drawing)return;pts.push(pos(e));draw();});
+  cv.addEventListener("pointerup",()=>{if(!drawing)return;drawing=false;check();});
+  clear.onclick=()=>{if(done)return;pts=[];draw();api.say("");};
+  const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+  const orient=(p,q,r)=>Math.sign((q.x-p.x)*(r.y-p.y)-(q.y-p.y)*(r.x-p.x));
+  const cross=(a,b,c,d)=>orient(a,b,c)!==orient(a,b,d)&&orient(c,d,a)!==orient(c,d,b);
+  function check(){
+   let len=0;for(let i=1;i<pts.length;i++)len+=dist(pts[i],pts[i-1]);
+   const fail=m=>{api.bad(m);setTimeout(()=>{if(!done){pts=[];draw();}},900);};
+   if(len<40)return fail("线太短了，画长一点吧");
+   if(pts.some(p=>[pig,...wolves].some(a=>dist(p,a)<32)))return fail("线碰到小动物了，离它们远一点");
+   if(pts.some(p=>rocks.some(r=>dist(p,r)<r.r+4)))return fail("碰到石头了，要绕过石头哦");
+   const blocked=wolves.filter(w=>{for(let i=1;i<pts.length;i++)if(cross(pts[i-1],pts[i],w,pig))return true;return false;}).length;
+   if(blocked===wolves.length){done=true;api.ok("篱笆挡住大灰狼了，小猪安全啦！");}
+   else fail(wolves.length>1?`挡住了 ${blocked} 只，还有 ${wolves.length-blocked} 只大灰狼能跑过去`:"大灰狼还能跑到小猪那里，再试一次");
+  }
+  draw();
+ }},
+{id:"stroke",cat:"记忆与顺序",icon:"✍️",name:"笔顺排排队",goal:"回忆规范笔顺，把每一步排好队。",levels:["动画可重播","动画只看一次","更多笔画＋纸笔书写"],
+ round(stage,level,api){
+  const c=pickOne(STROKE_POOL[level]);const data=STROKES[c];const n=data.s.length;
+  api.prompt(`看清楚「${c}」的笔顺，再把卡片按顺序排队！`,`${c}的笔顺是：${data.n.join("，")}`);
+  const model=h("div",{class:"model"});
+  model.innerHTML=tianSVG(data.s.map(s=>`<path class="st" d="${strokeD(s)}" stroke="#333" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`).join(""));
+  const replay=h("button",{},"🔁 再看一次");
+  stage.append(model);if(level===1)stage.append(h("div",{},replay));
+  function play(){const svg=model.querySelector("svg");const ps=[...svg.querySelectorAll("path.st")];
+   ps.forEach(p=>{const L=p.getTotalLength();p.style.transition="none";p.style.strokeDasharray=L;p.style.strokeDashoffset=L;});
+   svg.getBoundingClientRect();
+   setTimeout(()=>ps.forEach((p,i)=>{p.style.transition=`stroke-dashoffset .7s ease ${i*0.9}s`;p.style.strokeDashoffset="0";}),30);
+   return n*900+400;}
+  replay.onclick=()=>{play();speak(`${c}的笔顺是：${data.n.join("，")}`);};
+  const queue=h("div",{class:"queue"});const qs=[];for(let i=0;i<n;i++){const q=h("div",{class:"qslot"},String(i+1));qs.push(q);queue.append(q);}
+  const cards=h("div",{class:"strokecards"});
+  let next=0;
+  const t=play();
+  api.timer(()=>{
+   if(level>1){model.innerHTML=tianSVG(`<text x="50" y="66" font-size="48" text-anchor="middle" fill="#c9bfa8">？</text>`);api.say("范字藏起来了，凭记忆排一排吧");}
+   shuffle([...Array(n).keys()]).forEach(k=>{
+    const b=h("button",{class:"scard"});
+    b.innerHTML=tianSVG(data.s.slice(0,k+1).map((s,i)=>`<path d="${strokeD(s)}" stroke="${i===k?"#e5534b":"#333"}" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`).join(""));
+    b.onclick=()=>{
+     if(k===next){qs[next].innerHTML="";qs[next].append(b.firstElementChild);qs[next].style.borderStyle="solid";b.remove();speak(data.n[k]);next++;beep(true);
+      if(next===n)api.ok(level===3?`排好了！现在拿出纸笔，按这个顺序写三遍「${c}」吧`:`排好了！「${c}」的笔顺：${data.n.join("、")}`);}
+     else{b.classList.add("shake");setTimeout(()=>b.classList.remove("shake"),400);api.bad(`第 ${next+1} 笔还不是这一步哦（红色是新加的一笔）`);}};
+    cards.append(b);});
+   stage.append(queue,cards);
+  },t);
+ }},
+{id:"sentence",cat:"阅读应用",icon:"🧱",name:"句子拼拼乐",goal:"理解词序与句意。",levels:["三个词块","更多词块","多一个捣乱词块"],
+ round(stage,level,api){
+  const it=pickOne(level===1?SENT[1]:SENT[2]);
+  const blocks=level===3?[...it.w,pickOne(SENT_EXTRA)]:[...it.w];
+  api.prompt(level===3?"把词块排成一句通顺的话（有一个词块是捣乱的！）":"把词块排成一句通顺的话");
+  const ans=h("div",{class:"answer blocks"});const pool=h("div",{class:"blocks"});
+  const chosen=[];let locked=false;
+  stage.append(ans,pool);
+  shuffle(blocks).forEach(w=>{const b=h("button",{class:"block zi"},w);
+   b.onclick=()=>{if(locked)return;
+    if(b.parentNode===pool){ans.append(b);chosen.push(w);speak(w);}
+    else{pool.append(b);chosen.splice(chosen.indexOf(w),1);}
+    if(chosen.length===it.w.length){const ok=[it.w,...(it.alt||[])].some(a=>a.join("|")===chosen.join("|"));
+     if(ok){locked=true;beep(true);const sent=chosen.join("")+"。";api.say("句子拼好了！",false);speak(sent);
+      setTimeout(()=>{api.say("哪张图说的是这句话？",true);const row=h("div",{class:"pics"});
+       shuffle([it.pic,...it.bad]).forEach(p=>{const pb=h("button",{class:"pic"},p);pb.onclick=()=>{p===it.pic?api.ok(`答对了！${sent}`):api.bad("再读一读句子，看看图里是谁、在做什么");};row.append(pb);});
+       stage.append(row);},1800);}
+     else{api.bad("顺序不太对，读一读再试试");setTimeout(()=>{[...ans.children].forEach(x=>pool.append(x));chosen.length=0;},800);}}};
+   pool.append(b);});
+ }}
+];
+
+const CATS=[["文字加工","看清字形、拆解部件、掌握汉字结构"],["语音加工","声调、音节与声音操作"],["形音义整合","把字形、读音、词义与情境联系起来"],["空间规划","安排位置、路径与布局"],["记忆与顺序","保持字形、位置及笔顺信息"],["阅读应用","从词语进入句意与推论"]];
+const App={game:null,level:1,round:0,total:5,stars:0,timers:[],els:{}};
+function clearTimers(){App.timers.forEach(clearTimeout);App.timers=[];if("speechSynthesis" in window)speechSynthesis.cancel();}
+
+function home(){
+ clearTimers();App.game=null;
+ $("#top").replaceChildren(h("h1",{},"🌈 识字小乐园"),h("span",{class:"progress"},"读写困难儿童线上训练游戏"));
+ const m=$("#main");m.replaceChildren();
+ CATS.forEach(([cat,desc])=>{const gs=GAMES.filter(g=>g.cat===cat);if(!gs.length)return;
+  m.append(h("div",{class:"cat"},cat,h("small",{},desc)));
+  const row=h("div",{class:"games"});
+  gs.forEach(g=>row.append(h("button",{class:"gcard",onclick:()=>openGame(g)},h("div",{class:"ic"},g.icon),h("b",{class:"zi"},g.name),h("span",{},g.goal))));
+  m.append(row);});
+ m.append(h("div",{class:"note"},"给老师和家长：每款游戏先设一个主要目标，再逐步增加记忆、干扰或速度要求。点击或拖拽笔顺不能代替实际握笔书写，游戏进步也不宜直接等同于整体读写进步。建议使用 Chrome 或 Edge 浏览器，以获得中文语音朗读。"));
+}
+function openGame(g){App.game=g;App.level=1;renderGame();}
+function renderGame(){
+ clearTimers();const g=App.game;
+ const lv=h("div",{class:"levels"});
+ g.levels.forEach((d,i)=>lv.append(h("button",{class:App.level===i+1?"on":"",title:d,onclick:()=>{App.level=i+1;renderGame();}},`难度${i+1}`)));
+ App.els.progress=h("span",{class:"progress"});
+ $("#top").replaceChildren(h("button",{onclick:home},"⬅ 首页"),h("h1",{class:"zi"},`${g.icon} ${g.name}`),lv,App.els.progress);
+ App.els.prompt=h("div",{class:"prompt"});App.els.stage=h("div",{class:"stage"});App.els.fb=h("div",{class:"fb"});
+ $("#main").replaceChildren(h("div",{class:"progress",style:"margin-bottom:8px"},`🎯 ${g.goal}　当前难度：${g.levels[App.level-1]}`),App.els.prompt,App.els.stage,App.els.fb);
+ App.round=0;App.stars=0;nextRound();
+}
+function nextRound(){
+ clearTimers();
+ if(App.round>=App.total)return summary();
+ App.round++;App.mistakes=0;
+ App.els.progress.textContent=`第 ${App.round}/${App.total} 题　⭐×${App.stars}`;
+ App.els.stage.replaceChildren();App.els.prompt.replaceChildren();App.els.fb.className="fb";App.els.fb.replaceChildren();
+ App.game.round(App.els.stage,App.level,api);
+}
+function summary(){
+ App.els.prompt.replaceChildren(h("span",{},"🎉 本轮完成！"));
+ App.els.fb.replaceChildren();
+ const lv=App.level;
+ App.els.stage.replaceChildren(h("div",{class:"summary"},h("div",{},`完成 ${App.total} 题`),h("div",{class:"stars"},"⭐".repeat(App.stars)||"💪"),
+  h("div",{class:"grid"},h("button",{class:"pri",onclick:renderGame},"再玩一次"),lv<3?h("button",{class:"pri",onclick:()=>{App.level=lv+1;renderGame();}},"挑战下一级"):null,h("button",{onclick:home},"回到首页"))));
+ speak(`太厉害了，你得到了${App.stars}颗星星！`);
+}
+const api={
+ prompt(text,speakText){const say=speakText||text;App.els.prompt.replaceChildren(h("button",{title:"再听一次",onclick:()=>speak(say)},"🔊"),h("span",{},text));speak(say);},
+ say(text,talk){App.els.fb.className="fb";App.els.fb.replaceChildren(text);if(talk)speak(text);},
+ ok(text,speakText){if(App.mistakes<=1)App.stars++;App.els.progress.textContent=`第 ${App.round}/${App.total} 题　⭐×${App.stars}`;beep(true);App.els.fb.className="fb ok";
+  App.els.fb.replaceChildren(h("span",{},"✅ "+text),h("button",{class:"pri",onclick:nextRound},App.round>=App.total?"看成绩 ➜":"下一题 ➜"));speak(speakText||text);},
+ bad(text){App.mistakes++;beep(false);App.els.fb.className="fb bad";App.els.fb.replaceChildren("🤔 "+text);speak(text);},
+ timer(fn,ms){App.timers.push(setTimeout(fn,ms));}
+};
+home();
+</script>
+</body>
+</html>
