@@ -1,0 +1,8 @@
+# Python validation artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local editor and OS artifacts
+.DS_Store
+Thumbs.db

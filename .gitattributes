@@ -1,0 +1,4 @@
+# Keep vendored text and provenance hashes portable across Windows and Unix.
+.agents/skills/liran-plan/** text eol=lf
+# Preserve upstream Markdown hard line breaks (two trailing spaces).
+.agents/skills/liran-plan/**/*.md whitespace=-blank-at-eol

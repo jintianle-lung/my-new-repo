@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="zh-CN">
+<!-- 4.52 四档自适应 -->
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>liran-plan 使用教程</title>
+  <style>
+    :root {
+      --bg: #f6f1e8;
+      --paper: #fffaf1;
+      --ink: #241f1a;
+      --muted: #756c60;
+      --line: #e1d5c4;
+      --accent: #b4532a;
+      --accent-2: #1f6f5b;
+      --warn: #8a4b00;
+      --code: #211915;
+      --code-ink: #f8ead6;
+      --shadow: 0 20px 50px rgba(74, 48, 24, 0.14);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: ui-serif, Georgia, "Times New Roman", serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 8%, rgba(180, 83, 42, 0.14), transparent 28%),
+        radial-gradient(circle at 92% 18%, rgba(31, 111, 91, 0.14), transparent 26%),
+        linear-gradient(135deg, #fbf4e6, var(--bg));
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: rgba(255, 250, 241, 0.82);
+      backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      margin-bottom: 24px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: -0.04em;
+    }
+
+    .brand p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    nav a {
+      display: block;
+      color: var(--ink);
+      text-decoration: none;
+      border-radius: 12px;
+      padding: 9px 10px;
+      margin: 2px 0;
+      line-height: 1.35;
+    }
+
+    nav a:hover { background: rgba(180, 83, 42, 0.09); }
+    nav .level-1 { font-weight: 800; margin-top: 10px; }
+    nav .level-2 { padding-left: 22px; color: var(--muted); font-size: 14px; }
+    nav .level-3 { padding-left: 38px; color: var(--muted); font-size: 13px; }
+
+    main {
+      max-width: 1120px;
+      width: 100%;
+      padding: 42px clamp(18px, 4vw, 58px) 80px;
+    }
+
+    .hero {
+      padding: 42px;
+      border: 1px solid var(--line);
+      border-radius: 30px;
+      background: rgba(255, 250, 241, 0.86);
+      box-shadow: var(--shadow);
+    }
+
+    .hero h2 {
+      margin: 0;
+      font-size: clamp(36px, 6vw, 72px);
+      letter-spacing: -0.07em;
+      line-height: 0.96;
+    }
+
+    .hero p {
+      max-width: 780px;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.75;
+    }
+
+    section {
+      margin-top: 34px;
+      padding: 32px;
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      background: rgba(255, 250, 241, 0.78);
+      box-shadow: 0 8px 26px rgba(74, 48, 24, 0.08);
+    }
+
+    h2, h3, h4 { letter-spacing: -0.035em; }
+    h2 { margin: 0 0 18px; font-size: 34px; }
+    h3 { margin: 26px 0 12px; font-size: 24px; }
+    h4 { margin: 20px 0 8px; font-size: 18px; }
+    p, li { line-height: 1.75; }
+    ul, ol { padding-left: 22px; }
+
+    .callout {
+      border-left: 5px solid var(--accent);
+      padding: 14px 16px;
+      margin: 16px 0;
+      background: rgba(180, 83, 42, 0.09);
+      border-radius: 14px;
+    }
+
+    .ok { border-left-color: var(--accent-2); background: rgba(31, 111, 91, 0.09); }
+    .warn { border-left-color: var(--warn); background: rgba(138, 75, 0, 0.1); }
+
+    .prompt {
+      position: relative;
+      margin: 18px 0;
+      border-radius: 18px;
+      overflow: hidden;
+      background: var(--code);
+      color: var(--code-ink);
+      box-shadow: 0 14px 28px rgba(33, 25, 21, 0.18);
+    }
+
+    .prompt pre {
+      margin: 0;
+      padding: 48px 18px 18px;
+      overflow: auto;
+      white-space: pre-wrap;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .copy {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      border: 1px solid rgba(248, 234, 214, 0.28);
+      border-radius: 999px;
+      padding: 7px 12px;
+      color: var(--code-ink);
+      background: rgba(255,255,255,0.08);
+      cursor: pointer;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      background: rgba(255,255,255,0.36);
+    }
+
+    .mobile-menu {
+      display: none;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 250, 241, 0.94);
+    }
+
+    .mobile-menu select {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      color: var(--ink);
+    }
+
+    @media (max-width: 860px) {
+      .layout { display: block; }
+      aside { display: none; }
+      .mobile-menu { display: block; }
+      main { padding: 18px 14px 60px; }
+      .hero, section { padding: 22px; border-radius: 22px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <section id="goal-reclaim-contract">
+    <h2>最后普通目标回收合同</h2>
+    <p>最后普通目标完成真实验收、问题回写、修复复测和修改后评分后，必须按 goal_status=active → reclaim_pending → reclaimed 立即回收。回收后项目进入待用户检查，资料归档保持待归档确认；用户检查不再占用普通目标执行状态。用户明确回复“归档”后才创建独立 archive 目标，archive 不计入普通 N/M；归档失败保留原普通目标 reclaimed 和活动资料。</p>
+  </section>
+  <div class="mobile-menu">
+    <select onchange="location.hash=this.value">
+      <option value="#intro">技能介绍</option>
+      <option value="#new">新项目</option>
+      <option value="#add">老项目新增功能</option>
+      <option value="#continue">老项目续作</option>
+      <option value="#universal">万能版</option>
+      <option value="#short">最短版</option>
+    </select>
+  </div>
+
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <h1>liran-plan</h1>
+        <p>4.8 四档自适应：轻量/标准各 1 次目标，深度非 UI 2 次、UI 3 次，完整非 UI 3 次、UI 4 次；最后普通目标完成验收后先交接，用户回复“归档”后再执行独立归档。</p>
+      </div>
+      <nav>
+        <a class="level-1" href="#intro">1. 技能介绍</a>
+        <a class="level-2" href="#intro-routing">四档流程</a>
+        <a class="level-2" href="#intro-flow">流程总览</a>
+        <a class="level-2" href="#intro-six">六类入口</a>
+        <a class="level-2" href="#intro-docs">liran_docs</a>
+        <a class="level-1" href="#new">2. 新项目</a>
+        <a class="level-2" href="#new-demand">需求整理</a>
+        <a class="level-2" href="#new-docs">生成文档</a>
+        <a class="level-2" href="#new-goal">分阶段 /goal</a>
+        <a class="level-1" href="#add">3. 老项目新增功能</a>
+        <a class="level-2" href="#add-demand">需求整理</a>
+        <a class="level-2" href="#add-docs">挂进文档</a>
+        <a class="level-1" href="#continue">4. 老项目续作</a>
+        <a class="level-2" href="#continue-demand">先盘状态</a>
+        <a class="level-2" href="#continue-docs">对齐文档</a>
+        <a class="level-1" href="#universal">5. 万能版</a>
+        <a class="level-2" href="#universal-start">不知道怎么走</a>
+        <a class="level-2" href="#universal-fix">老项目修复</a>
+        <a class="level-2" href="#universal-delete">老项目删除</a>
+        <a class="level-1" href="#short">6. 最短版</a>
+      </nav>
+    </aside>
+
+    <main>
+      <div class="hero" id="top">
+        <h2>liran-plan 使用教程</h2>
+        <p>4.8 先为具体修改任务建立 Markdown 事实源，再按 documentation、可选 ui、development、acceptance 分阶段执行。原生选择框的问题、选项和描述均为纯文本；工具不可用时使用“选项一：……”普通段落。</p>
+      </div>
+
+      <section id="intro">
+        <h2>1. 技能介绍</h2>
+        <h3 id="intro-routing">四档自适应流程</h3>
+        <div class="grid">
+          <div class="card"><strong>轻量流程（0–35）</strong><br />独立小 Bug、局部样式、小逻辑。一次简短整理、一次确认、一条轻量 /goal。</div>
+          <div class="card"><strong>标准流程（36–69）</strong><br />单模块多个文件、单页面或简单多模块业务链。一次模块级整理、一次确认、一条标准 /goal。</div>
+          <div class="card"><strong>深度流程（70–89）</strong><br />复杂多模块、共享逻辑、新页面复杂状态或高风险任务。非 UI 2 次，UI 3 次 /goal。</div>
+          <div class="card"><strong>完整流程候选（90–100）</strong><br />新项目、三个或以上独立功能模块、整体架构重构或大规模迁移。还需命中项目级硬门槛。</div>
+        </div>
+        <p>评分看五项：项目现状、修改规模、依赖与修改后影响、风险与回滚、验证复杂度。每项 0–20 分，未知不能打 0；修改只有一行也要搜索所有调用方。未命中安全门禁时采用用户指定档位；安全门禁只规定最低档位。关键影响未知时先继续调查，执行前仍无法查清时最低按深度流程处理。</p>
+        <p><strong>当前流程：标准流程（40/100）</strong></p>
+        <p><strong>开始方式：按照标准流程，先整理当前模块和影响范围，确认后生成一条标准 /goal 提示词。</strong></p>
+        <p><strong>选择原因：修改集中在一个模块，但涉及多个关联文件；影响范围可以确认，不涉及公共协议和高风险数据。</strong></p>
+        <div class="callout ok">
+          <strong>确认顺序：</strong>需求整理结束后，先将同一份 PRD 草稿严格转换为正式 PRD、建立 PRD 索引并输出给用户确认；用户回复“PRD 没问题”后，再在同一个纯文本选择问题里选择“$liran-plan Codex 真机测试（额外要求：生成提示词里面的目标需求需要详细，不漏一点细节。）”或“$liran-plan 我自己测试（额外要求：生成提示词里面的目标需求需要详细，不漏一点细节。）”。有 <code>request_user_input</code> 时必须实际调用原生选择框；工具不可用时才退回“选项一：……”纯文本段落。用户选择后同一轮自动获得完整提示词，提示词整体放在一个代码块中。Stitch 不调用 Product Design Design QA，但不能跳过初次接收检查和强制实例级细节复修；其他明确高保真 Product Design 任务仍不能跳过已触发的页面样式检查。
+        </div>
+        <div id="intro-flow" class="callout">
+          <p><strong>Stitch 完整视觉复修：</strong>固定提示词不只检查控件大小，还必须核对结构布局、尺寸间距、字体排版、颜色样式、图片资源、层级、状态和响应式。项目微调只能补充或替换事实，不能删除固定正文；不适用项仍保留标记。实例级复修提示词也必须保持 3000–10000 个字符，不走普通流程合同；其他原本使用 3000–10000 字符校验的长提示词改为 3000–10000。</p>
+        </div>
+        <h3 id="intro-six">六类入口</h3>
+        <div class="grid">
+          <div class="card">新项目：从 0 整理需求和文档。</div>
+          <div class="card">老项目新增功能：新增一个或一批功能。</div>
+          <div class="card">老项目续作：已经做了一些，现在接着做。</div>
+          <div class="card">老项目修复：修一个或一批问题。</div>
+          <div class="card">老项目删除：删除功能、入口、接口或配置。</div>
+          <div class="card">其他：前 5 类以外，但仍然要用 `liran-plan` 处理的需求。</div>
+        </div>
+        <h3 id="intro-docs">liran_docs</h3>
+        <div class="callout ok"><strong>4.8 文档与目标生命周期：</strong>具体任务首轮在指定目录创建/复用任务 Markdown；路径不明就询问。documentation 目标更新文档、任务/微观任务、追踪和验收准备；如适用，ui 目标只做视觉与 UI 壳；development 做业务接线和内测；最后普通目标做真实验收、回写和复测后进入用户检查交接，用户回复“归档”后再执行独立归档。</div>
+        <p>完整流程默认创建完整 `liran_docs/`；深度只更新受影响文档，标准定向更新已有文档，轻量不为小改新建整套体系。旧项目已有 `docs/` 时，只把它当历史资料来源，后续新增和维护优先落到 `liran_docs/`。生成/更新 `liran_docs/` 与一次性拆完全部已确认需求在同一条提示词、同一步完成；如果本轮还需要 UI / 前端设计流程，先进入真实前端 UI 壳五路线选择。五条路线都必须先确认文本视觉方案，必要时再确认视觉图 / 原型图；如需生图，优先选择 `$liran-image2` 或用户指定的外部工具，禁止使用 `$imagegen`。造壳前 Codex 必须生成 UI 壳接入清单、创建合法占位文件、安排入口、准备 mock/type/局部样式/注释锚点，并写清允许编辑文件清单。若选择 Stitch 路线，Codex 还必须先追问“视觉方案确认好了吗？”，确认后生成 Stitch 专用提示词，再在拿到 `$Stitch` / Stitch MCP 信息后更新接入清单、创建合法占位文件，并严格根据 Stitch 下载下来的 HTML 样式和 HTML 静态数据做实例级视觉规格保真的一比一还原，禁止自由发挥、禁止只模仿大概风格、禁止重新设计。这里必须先做控件规格盘点，并按“HTML → 代码 / 样式 / MD → 截图”的事实来源优先级读取；还要防止老项目默认 Button / Input / Icon / Table 规格、全局样式和公共组件样式把 Stitch 结果带偏。文本视觉方案、视觉图 / 原型图、真实前端 UI 壳或前端优化确认后，如有需求、交互、页面结构或状态变化，再回到文档体系、任务模块和微观任务做修订。已有项目中途插入 UI 视觉确认时，视觉图确认前不要把文本视觉草案写死进文档；外部 AI 输入包不能只写“请 @product-design 生成页面代码”。Design QA 已触发时，QA 不通过不能收口；90% 以上高还原是最低视觉相似度线，不是放宽 Product Design QA；非 Stitch Product Design 路线必须同图对比、必要局部放大、更新 design-qa.md、检查五大保真面，并且只有没有 actionable P0/P1/P2 才能 passed。QA 不能挤牙膏：每轮先批量差异盘点，按 P0/P1/P2/P3 分级，优先批量修 P0 + P1 并尽量合并处理 P2，不能只改一个问题就重新 QA；Chrome 扩展改完代码后必须先到 chrome://extensions 刷新扩展，再刷新或重新打开插件页面后截图 QA。4.8 补充：轻量和标准保持 1 次目标；深度非 UI 固定 2 次、深度 UI 固定 3 次；完整非 UI 固定 3 次、完整 UI 固定 4 次。文档、UI、开发和最终验收各守边界，最后普通目标先进入待用户检查与待归档确认；用户回复“归档”后才执行独立正式归档。</p>
+        <div class="prompt"><button class="copy">复制</button><pre>你自行判断本任务是否需要多智能体协作；如需开启，只允许一个主智能体统筹，任一时刻最多同时运行五个子代理，子代理完成后必须及时回收，回收后可按需启用新的子代理，禁止子代理继续派生代理。
+
+请直接开始执行下面步骤，先读取对应文档，再输出结果，不要先解释。
+$liran-plan</pre></div>
+      </section>
+
+      <section id="new">
+        <h2>2. 新项目</h2>
+        <h3 id="new-demand">先多轮整理需求</h3>
+        <p>你可以先说零散想法，Codex 每轮只归纳，不开干。整理好了再让它输出一条同时生成 `liran_docs` 并一次性拆完全部已确认需求的详细提示词。</p>
+        <div class="prompt"><button class="copy">复制</button><pre>你自行判断本任务是否需要多智能体协作；如需开启，只允许一个主智能体统筹，任一时刻最多同时运行五个子代理，子代理完成后必须及时回收，回收后可按需启用新的子代理，禁止子代理继续派生代理。
+
+请直接开始执行下面步骤，先读取对应文档，再输出结果，不要先解释。
+$liran-plan 我这是一个新项目。先在指定目录创建 PRD 草稿并持续更新；除此之外先不要写代码、不要生成完整文档体系、不要开 /goal。请进入多轮需求整理：帮我记录原话、提炼已确定需求、标出未确定点和风险。每轮先更新同一份 PRD，再输出增量回执并问我“整理好了吗，还需要补充吗？”；如果我说“需求整理好了”或“总结好了”，先将 PRD 草稿严格转换为正式 PRD、建立 PRD 索引并输出给我确认；我回复“PRD 没问题”后，再让我选择 Codex 真机测试或 我自己测试，随后给我一条同时生成/更新 liran_docs 文档体系并一次性拆完全部已确认任务的详细可复制提示词。</pre></div>
+        <h3 id="new-docs">生成/更新 liran_docs + 一次性拆完全部已确认需求</h3>
+        <div class="prompt"><button class="copy">复制</button><pre>你自行判断本任务是否需要多智能体协作；如需开启，只允许一个主智能体统筹，任一时刻最多同时运行五个子代理，子代理完成后必须及时回收，回收后可按需启用新的子代理，禁止子代理继续派生代理。
+
+请直接开始执行下面步骤，先读取对应文档，再输出结果，不要先解释。
+$liran-plan 基于前面已经整理好的新项目需求，用这一条提示词同时完成两件事：①一次性生成/更新完整的 liran_docs 文档体系；②一次性拆完全部已确认需求、任务模块和微观任务。这两件事在同一步做完，不分批、不留尾巴。先不要写代码，不要开 /goal，不要进入真机实测。
+
+当前场景：新项目
+当前目标：把前面已确认的新项目需求一次性落到完整的 liran_docs 文档体系，并一次性拆完全部微观任务。
+
+已确认需求：
+1. &lt;需求 1&gt;
+2. &lt;需求 2&gt;
+3. &lt;需求 3&gt;
+
+已确认边界：
+1. &lt;不做什么&gt;
+2. &lt;哪些旧功能不能动&gt;
+3. &lt;哪些数据、接口、配置、入口需要保留或谨慎处理&gt;
+
+需要重点影响或确认的模块：
+1. &lt;模块 / 页面 / 接口 / 配置；未知就写待确认&gt;
+2. &lt;模块 / 页面 / 接口 / 配置；未知就写待确认&gt;
+
+验收标准：
+1. &lt;文档层面怎样算整理完成&gt;
+2. &lt;后续开发或验收必须满足什么&gt;
+
+请生成或更新以下文件，并逐个说明每个文件本轮改什么、补什么、删什么、更新什么：
+1. `liran_docs/用户原话.md`
+2. `liran_docs/00-项目说明书.md`
+3. `liran_docs/01-需求文档.md`
+4. `liran_docs/02-架构文档.md`
+5. `liran_docs/03-索引.md`
+6. `liran_docs/modules/...`
+7. `liran_docs/04-开发追踪.md`
+8. 如有必要，`liran_docs/05-术语表.md`、`liran_docs/06-数据字典.md`、`liran_docs/07-API文档.md`、`liran_docs/08-测试用例.md`
+
+文档一次性补齐后，紧接着在同一步里把全部已确认需求、任务模块和微观任务一次性拆成可执行的任务卡片（每个任务写清依据文档、改动范围、具体动作、完成标准、完成后状态），不留到下一条提示词再拆。如果信息不足以一次性补齐，先补最少必要信息，不要先拆局部文档或只拆一半任务。
+
+完成后输出：
+1. 本次生成/更新了哪些 liran_docs 文件。
+2. 本次一次性拆出的全部微观任务清单。
+3. 当前需求是否还缺信息。
+4. 是否需要真实前端 UI 壳五路线；需要就直接给出“进入真实前端 UI 壳五路线选择”提示词，不需要就说明原因。
+5. 是否已经可以开启下一阶段 /goal；可以就直接给出详细的下一阶段 /goal 提示词，不可以就说明还缺什么。</pre></div>
+        <h3 id="new-goal">分阶段 /goal</h3>
+        <p>深度非 UI：documentation 1/2 → development-and-acceptance 2/2；深度 UI 在中间插入 ui 2/3。完整非 UI：documentation 1/3 → development 2/3 → acceptance 3/3；完整 UI 在文档后插入 ui 2/4。外部 AI/Stitch 等待只暂停原 ui 目标，不改 N/M。</p>
+      </section>
+
+      <section id="add">
+        <h2>3. 老项目新增功能</h2>
+        <h3 id="add-demand">先调查评分，再按档位整理</h3>
+        <p>新增少量功能不自动进入完整流程。Codex 会先看挂载位置、旧模块依赖和验证范围，再决定轻量、标准或深度；只有同时新增三个或以上独立功能模块或命中其它项目级硬门槛时才进入完整流程。</p>
+        <div class="prompt"><button class="copy">复制</button><pre>你自行判断本任务是否需要多智能体协作；如需开启，只允许一个主智能体统筹，任一时刻最多同时运行五个子代理，子代理完成后必须及时回收，回收后可按需启用新的子代理，禁止子代理继续派生代理。
+
+请直接开始执行下面步骤，先读取对应文档，再输出结果，不要先解释。
+$liran-plan 这是一个老项目，我要新增功能：&lt;具体功能&gt;。请先只读调查挂载位置、相关模块、调用方、测试和 Git 状态，完成修改前评分并正常加粗显示当前流程、开始方式和选择原因。按对应档位整理需求；request_user_input 可用时实际调用 Codex 原生选择框，不可用时才显示文字编号。我选择后同一轮自动生成当前阶段的 /goal，后续阶段逐次交棒，并把每条完整提示词放进一个代码块。</pre></div>
+        <h3 id="add-docs">按档位更新文档</h3>
+        <p>轻量流程通常不建完整 `liran_docs`；标准流程只更新已有的受影响文档；深度流程先用 documentation 目标更新受影响文档和任务，再由后续目标继续开发。只有完整流程才一次性补齐 `01/02/03/modules/04` 和全部微观任务。</p>
+      </section>
+
+      <section id="continue">
+        <h2>4. 老项目续作</h2>
+        <h3 id="continue-demand">先盘真实状态并评分</h3>
+        <div class="prompt"><button class="copy">复制</button><pre>你自行判断本任务是否需要多智能体协作；如需开启，只允许一个主智能体统筹，任一时刻最多同时运行五个子代理，子代理完成后必须及时回收，回收后可按需启用新的子代理，禁止子代理继续派生代理。
+
+请直接开始执行下面步骤，先读取对应文档，再输出结果，不要先解释。
+$liran-plan 这是一个老项目，我已经做了一部分，现在要续作：&lt;具体范围&gt;。请先只读盘点代码、旧文档、liran_docs、开发追踪、测试和 Git 状态，完成修改前评分并正常加粗显示当前流程、开始方式和选择原因。不要因为是老项目就自动重建完整文档；按实际档位整理和确认。</pre></div>
+        <h3 id="continue-docs">对齐文档</h3>
+        <p>如果代码、旧 `docs/`、`liran_docs/` 和真实进度不一致，先按当前档位回写受影响文档，再继续拆任务或进入当前阶段 `/goal`；四档都按 4.6 阶段矩阵开启当前阶段 `/goal`。</p>
+      </section>
+
+      <section id="universal">
+        <h2>5. 万能版</h2>
+        <h3 id="universal-start">不知道怎么走</h3>
+        <div class="prompt"><button class="copy">复制</button><pre>你自行判断本任务是否需要多智能体协作；如需开启，只允许一个主智能体统筹，任一时刻最多同时运行五个子代理，子代理完成后必须及时回收，回收后可按需启用新的子代理，禁止子代理继续派生代理。
+
+请直接开始执行下面步骤，先读取对应文档，再输出结果，不要先解释。
+$liran-plan 我现在不知道下一步该干嘛。请先只读调查当前项目、开发追踪、测试和 Git 状态，判断当前目标是否已经完成；未完成时先完成修改前评分，正常加粗显示当前流程、开始方式和选择原因，再按对应档位整理。只有没有具体任务时才让我选择六类场景。</pre></div>
+        <h3 id="universal-fix">老项目修复</h3>
+        <p>修复不是一上来就改代码。先把问题、复现路径、期望结果、影响范围和不能改坏的旧功能整理清楚。</p>
+        <div class="prompt"><button class="copy">复制</button><pre>你自行判断本任务是否需要多智能体协作；如需开启，只允许一个主智能体统筹，任一时刻最多同时运行五个子代理，子代理完成后必须及时回收，回收后可按需启用新的子代理，禁止子代理继续派生代理。
+
+请直接开始执行下面步骤，先读取对应文档，再输出结果，不要先解释。
+$liran-plan 请修复这个问题：&lt;问题现象&gt;。复现方式：&lt;步骤&gt;。当前结果：&lt;错误结果&gt;。期望结果：&lt;正确结果&gt;。请先只读调查根因入口和所有调用方，完成修改前评分并正常加粗显示当前流程、开始方式和选择原因。按对应档位整理需求；request_user_input 可用时实际调用 Codex 原生选择框，不可用时才显示文字编号。我选择后同一轮自动生成当前阶段的 /goal，后续阶段逐次交棒，并把每条完整提示词放进一个代码块。</pre></div>
+        <h3 id="universal-delete">老项目删除</h3>
+        <p>删除要比新增更谨慎：先确认删什么、依赖谁、哪些数据和接口要保留，避免误删和残留。</p>
+        <div class="prompt"><button class="copy">复制</button><pre>你自行判断本任务是否需要多智能体协作；如需开启，只允许一个主智能体统筹，任一时刻最多同时运行五个子代理，子代理完成后必须及时回收，回收后可按需启用新的子代理，禁止子代理继续派生代理。
+
+请直接开始执行下面步骤，先读取对应文档，再输出结果，不要先解释。
+$liran-plan 我要删除：&lt;对象&gt;。请先只读调查入口、调用方、数据、配置、接口和保留项，完成修改前评分并正常加粗显示当前流程、开始方式和选择原因。数据删除、迁移或不可逆操作最低进入深度流程；需要我确认的高风险动作必须停下确认。</pre></div>
+      </section>
+
+      <section id="short">
+        <h2>6. 最短版</h2>
+        <div class="callout ok"><strong>最短入口：</strong>有具体任务就直接说，Codex 自动评分分档；没有具体任务才先发 `$liran-plan` 选场景。</div>
+        <div class="prompt"><button class="copy">复制</button><pre>你自行判断本任务是否需要多智能体协作；如需开启，只允许一个主智能体统筹，任一时刻最多同时运行五个子代理，子代理完成后必须及时回收，回收后可按需启用新的子代理，禁止子代理继续派生代理。
+
+请直接开始执行下面步骤，先读取对应文档，再输出结果，不要先解释。
+需求整理好了。先将 PRD 草稿严格转换为正式 PRD、建立 PRD 索引并输出给我确认；我回复“PRD 没问题”后，再让我选择 Codex 真机测试或 我自己测试，随后给我一条提示词，同时完成①生成/更新 liran_docs 文档体系、②一次性拆完全部已确认需求的微观任务，不分两条提示词。</pre></div>
+        <div class="prompt"><button class="copy">复制</button><pre>你自行判断本任务是否需要多智能体协作；如需开启，只允许一个主智能体统筹，任一时刻最多同时运行五个子代理，子代理完成后必须及时回收，回收后可按需启用新的子代理，禁止子代理继续派生代理。
+
+请直接开始执行下面步骤，先读取对应文档，再输出结果，不要先解释。
+$liran-plan 基于前面已经整理好的需求，用这一条提示词同时完成两件事：①一次性生成/更新完整的 liran_docs 文档体系；②一次性拆完全部已确认需求、任务模块和微观任务。这两件事在同一步做完，不分批、不留尾巴。先不要写代码，不要开 /goal，不要进入真机实测。
+
+请先读取：liran_docs/03-索引.md、liran_docs/04-开发追踪.md、liran_docs/modules/...，如有 liran_docs/08-测试用例.md 也一起读取。
+
+要求：覆盖本轮全部已确认需求，不要只围着单个模块拆。每个任务都写清任务编号、依据文档、涉及文件/模块、具体动作、内部验证方式、完成标准、完成后状态。可以参考 `04-开发追踪.md` 的顺序，但不能把“先做单个模块”当作默认收口。
+
+完成后输出：本次生成/更新了哪些 liran_docs 文件、任务清单、是否已经足够一次性拆完全部已确认需求、是否适合开启下一阶段 /goal；如果适合就给我详细的下一阶段 /goal 提示词；如果不适合，说明还要先补哪份 liran_docs 文档。</pre></div>
+      </section>
+
+<section class="card">
+<h2>Codex 3.5 UI 壳流程</h2>
+<p>UI 阶段默认产物是真实前端 UI 壳，不是独立 HTML 或 demo。造壳前 Codex 必须生成 <code>liran_docs/10-UI壳接入清单.md</code> 和 <code>liran_docs/ui-shells/...</code>，创建合法占位文件，写清允许编辑文件清单，准备 mock/type/局部样式和 <code>TODO(ui-shell)</code>、<code>TODO(codex-connect)</code>、<code>TODO(codex-state)</code>、<code>TODO(codex-permission)</code>、<code>TODO(codex-validate)</code>、<code>TODO(codex-route)</code>。原生选择框使用 3+3 两步：先显示 Codex 直接、@product-design、继续选择外部或 Studio 路线；只有选择第三项才显示外部 AI、Stitch、Codex 内嵌模型。“继续选择”只导航，不生成 /goal；工具不可用时才一次显示五个纯文本段落。五条最终路线：$liran-plan Codex 直接生成前端 UI 壳（额外要求：生成提示词里面的目标需求需要详细，不漏一点细节。）、$liran-plan @product-design（额外要求：生成提示词里面的目标需求需要详细，不漏一点细节。）、$liran-plan @product-design + 外部 AI 生成前端 UI（额外要求：生成提示词里面的目标需求需要详细，不漏一点细节。）、$liran-plan @product-design + $Stitch / Stitch MCP（额外要求：生成提示词里面的目标需求需要详细，不漏一点细节。）、$liran-plan @product-design + Codex 内嵌 Gemini 或其他生成的好看的模型生成前端 UI（额外要求：生成提示词里面的目标需求需要详细，不漏一点细节。）。如果走 Stitch 路线，必须先追问“视觉方案确认好了吗？”，确认后生成 Stitch 提示词，再根据 Stitch MCP 下载下来的 HTML 样式和 HTML 静态数据做实例级视觉规格保真的一比一还原到真实前端文件；开始前先做控件规格盘点，并按 HTML、代码 / 样式 / MD、截图的顺序取证。第五条路线由 @product-design 先确认文本视觉方案，Codex 再通过 OpenCodex 本地路由在当前会话内选择 Gemini 或其他当前可用模型生成真实前端 UI 壳；不复制提示词到外部软件、不维护固定模型白名单、不新增强制模型选择框，仍执行接入清单、合法占位文件、文件白名单、样式隔离、UI 壳接收检查和非 Stitch Design QA。外部 AI 只在 Codex 指定文件里造 UI 壳；样式默认只能在当前 UI 壳范围内生效；接收检查不通过时不能进入后续 development 目标接业务。</p>
+</section>
+</main>
+  </div>
+
+  <script>
+    document.querySelectorAll(".prompt").forEach((box) => {
+      const btn = box.querySelector(".copy");
+      const text = box.querySelector("pre").innerText;
+      btn.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(text);
+          btn.textContent = "已复制";
+          setTimeout(() => btn.textContent = "复制", 1200);
+        } catch {
+          btn.textContent = "复制失败";
+          setTimeout(() => btn.textContent = "复制", 1200);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

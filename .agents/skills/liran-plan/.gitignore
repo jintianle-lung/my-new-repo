@@ -1,0 +1,20 @@
+.DS_Store
+._*
+
+# Local/editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local copied agent/plugin caches, not part of this skill
+docs/.agent/
+**/docs/.agent/
+.playwright-mcp/
